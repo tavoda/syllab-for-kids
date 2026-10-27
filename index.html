@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skúšanie slabík</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 26px;
+        }
+        .config-panel {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+        .config-group {
+            margin-bottom: 18px;
+        }
+        .config-group:last-child {
+            margin-bottom: 0;
+        }
+        .config-group label.group-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .options {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .options label {
+            font-weight: normal;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 16px;
+        }
+        #slabika {
+            font-size: 110px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 40px 0;
+            letter-spacing: 3px;
+            min-height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            align-items: center;
+        }
+        button {
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #4caf50;
+            color: white;
+            padding: 14px 25px;
+            flex: 1;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        /* Štvorcové tlačidlo Späť */
+        .btn-square {
+            background-color: #7f8c8d;
+            color: white;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        .btn-square:hover {
+            background-color: #6c7a7b;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- OBRAZOVKA 1: SETUP -->
+        <div id="screen-setup">
+            <h2>⚙️ Nastavenie</h2>
+            
+            <div class="config-panel">
+                <div class="config-group">
+                    <label class="group-title">Typ písma (vyber aspoň jedno):</label>
+                    <div class="options">
+                        <label><input type="checkbox" id="cVelke" checked onchange="validujPismo()"> VEĽKÉ</label>
+                        <label><input type="checkbox" id="cMale" onchange="validujPismo()"> malé</label>
+                    </div>
+                </div>
+                
+                <div class="config-group">
+                    <label class="group-title">Dĺžka samohlások:</label>
+                    <div class="options">
+                        <label><input type="checkbox" id="cDlhe" checked> Používať dlhé (Á, É, Í...)</label>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <label class="group-title">Slovenská diakritika:</label>
+                    <div class="options">
+                        <label><input type="checkbox" id="cDiakritika" checked> Spoluhlásky s mäkčeňom (Č, Ž, Š...)</label>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <label class="group-title">Počet písmen v slabike:</label>
+                    <div class="options">
+                        <label><input type="radio" name="dlzkaSlabiky" value="2" checked> 2 písmená (Spoluh. + Samohl.)</label>
+                        <label><input type="radio" name="dlzkaSlabiky" value="3"> 3 písmená (Spoluh. + Samohl. +Spoluh.)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn-primary" style="background-color: #008cba; width: 100%; flex: none;" onclick="spustitTest()">Spustiť test ▶️</button>
+            </div>
+        </div>
+
+        <!-- OBRAZOVKA 2: TEST -->
+        <div id="screen-test" class="hidden">
+            <h2>📖 Precvičovanie</h2>
+            
+            <div id="slabika">-</div>
+            
+            <div class="btn-container">
+                <div class="btn-row">
+                    <button class="btn-square" onclick="navratNaSetup()" title="Nastavenie">⚙️</button>
+                    <button class="btn-primary" onclick="generujSlabiku()">Ďalšia slabika ➡️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Základné spoluhlásky bez mäkčeňov
+        const zakladneSpoluhlasky = ['M', 'P', 'B', 'V', 'T', 'D', 'N', 'L', 'R', 'S', 'Z', 'K', 'G', 'C', 'J', 'F', 'H', 'CH'];
+        // Spoluhlásky s mäkčeňom
+        const makceneSpoluhlasky = ['Č', 'Ž', 'Š', 'Ť', 'Ď', 'Ň', 'Ľ'];
+
+        const kratkeSamohlasky = ['A', 'E', 'I', 'O', 'U', 'Y'];
+        const dlheSamohlasky = ['Á', 'É', 'Í', 'Ó', 'Ú'];
+
+        function validujPismo() {
+            const v = document.getElementById('cVelke').checked;
+            const m = document.getElementById('cMale').checked;
+            if (!v && !m) {
+                document.getElementById('cVelke').checked = true;
+            }
+        }
+
+        function spustitTest() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-test').classList.remove('hidden');
+            generujSlabiku();
+        }
+
+        function navratNaSetup() {
+            document.getElementById('screen-test').classList.add('hidden');
+            document.getElementById('screen-setup').classList.remove('hidden');
+        }
+
+        function generujSlabiku() {
+            // Zostavenie zoznamu spoluhlások
+            let dostupneSpoluhlasky = [...zakladneSpoluhlasky];
+            if (document.getElementById('cDiakritika').checked) {
+                dostupneSpoluhlasky = dostupneSpoluhlasky.concat(makceneSpoluhlasky);
+            }
+
+            // Zostavenie zoznamu samohlások
+            let dostupneSamohlasky = [...kratkeSamohlasky];
+            if (document.getElementById('cDlhe').checked) {
+                dostupneSamohlasky = dostupneSamohlasky.concat(dlheSamohlasky);
+            }
+
+            const sp1 = dostupneSpoluhlasky[Math.floor(Math.random() * dostupneSpoluhlasky.length)];
+            const sa = dostupneSamohlasky[Math.floor(Math.random() * dostupneSamohlasky.length)];
+            const sp2 = dostupneSpoluhlasky[Math.floor(Math.random() * dostupneSpoluhlasky.length)];
+
+            const typDlzky = document.querySelector('input[name="dlzkaSlabiky"]:checked').value;
+            
+            let poskladanyText = "";
+            if (typDlzky === "2") {
+                poskladanyText = sp1 + sa;
+            } else {
+                poskladanyText = sp1 + sa + sp2;
+            }
+
+            const chkVelke = document.getElementById('cVelke').checked;
+            const chkMale = document.getElementById('cMale').checked;
+            
+            if (chkVelke && chkMale) {
+                if (Math.random() > 0.5) {
+                    poskladanyText = poskladanyText.toLowerCase();
+                }
+            } else if (chkMale) {
+                poskladanyText = poskladanyText.toLowerCase();
+            }
+
+            document.getElementById('slabika').innerText = poskladanyText;
+        }
+    </script>
+
+</body>
+</html>
+
